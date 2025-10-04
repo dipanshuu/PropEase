@@ -17,6 +17,10 @@ namespace PropEase.Controllers
         {
             return View();
         }
+        public void SendMessage()
+        {
+//add to database
+        }
 
         public IActionResult Privacy()
         {
