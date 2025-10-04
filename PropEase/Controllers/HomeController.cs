@@ -1,25 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PropEase.Models;
+using PropEase.Repository;
 using System.Diagnostics;
 
 namespace PropEase.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IContactMessageRepository ContactMessageRepo;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IContactMessageRepository cmr)
         {
-            _logger = logger;
+            this.ContactMessageRepo = cmr;
         }
 
         public IActionResult Index()
         {
             return View();
         }
-        public void SendMessage()
+        [HttpPost]
+        public async Task<IActionResult> SendMessage(string name,string email,string subject,string message)
         {
-//add to database
+            var detail = new ContactDetail
+            {
+                Name = name,
+                Email=email,
+                Subject=subject,
+                Message=message
+            };
+            await this.ContactMessageRepo.SaveContactMessage(detail.Name,detail.Email,detail.Subject,detail.Message);
+            return Json(new { success = true, responseText = "Data Saved" });
         }
 
         public IActionResult Privacy()

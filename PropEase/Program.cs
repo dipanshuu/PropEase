@@ -1,8 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using PropEase.Context;
+using PropEase.Repository;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddDbContext<AppDBContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IContactMessageRepository,ContactMessageRepository>();
+builder.Services.AddScoped<AppDBContext,AppDBContext>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
