@@ -9,6 +9,7 @@ namespace PropEase.Models
         public string Username { get; set; }
         [Required]
         public string PasswordHash { get; set; }
+        public ICollection<UserRole> UserRoles { get; set; }
 
     }
 }

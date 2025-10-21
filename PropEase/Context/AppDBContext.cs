@@ -8,6 +8,10 @@ namespace PropEase.Context
     {
         public DbSet<ContactDetail> ContactsMsg { get; set; }
         public DbSet<User> UsersMsg { get; set; }
+
+        public DbSet<UserRole> UserRoles { get; set; }
+
+        public DbSet<Role> Roles { get; set; }
         public AppDBContext(DbContextOptions<AppDBContext> options):base(options)
         {
 

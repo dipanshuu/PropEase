@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using PropEase.Repository.UserRole;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,9 +15,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDBContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IContactMessageRepository,ContactMessageRepository>();
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<AppDBContext,AppDBContext>();
 builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
-//builder.Services.AddHttpClient("MyClient").AddHttpMessageHandler<AuthHandler>();
+builder.Services.AddHttpContextAccessor();
+//+builder.Services.AddHttpClient("MyClient").AddHttpMessageHandler<AuthHandler>();
 builder.Services.AddAuthentication(options =>
 { 
 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -34,6 +37,18 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.HttpContext.Request.Cookies["jwtToken"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 builder.Services.AddControllersWithViews();

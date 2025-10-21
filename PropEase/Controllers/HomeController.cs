@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PropEase.Models;
 using PropEase.Repository;
 using System.Diagnostics;
 
 namespace PropEase.Controllers
 {
+    [Authorize]
+    [AuthorizeRoles("admin")]
     public class HomeController : Controller
     {
         private readonly IContactMessageRepository ContactMessageRepo;

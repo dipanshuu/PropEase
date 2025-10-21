@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropEase.Context;
 using PropEase.Helper;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace PropEase.Controllers
 {
@@ -21,18 +23,60 @@ namespace PropEase.Controllers
         {
             return View();
         }
+        //[HttpPost("login")]
+        //public async Task<IActionResult> Login([FromForm] LoginModel loginModel)
+        //{
+        //    var hashedPassword=PasswordHasher.HashPassword(loginModel.Password);
+        //    var user = await _context.UsersMsg.FirstOrDefaultAsync(u => u.Username == loginModel.Username && u.PasswordHash == hashedPassword);
+        //    if(user==null)
+        //    {
+        //        ViewBag.ErrorMessage = "Invalid username or password";
+        //        return View();
+        //    }
+        //    var token = JwtTokenGenerator.GenerateToken(
+        //        user.Username,
+        //        _configuration["Jwt:Key"],
+        //         _configuration["Jwt:Issuer"],
+        //          _configuration["Jwt:Audience"]
+        //        );
+        //    Response.Cookies.Append("jwtToken", token, new CookieOptions
+        //    {
+        //        HttpOnly = true,
+        //        Expires = DateTime.UtcNow.AddHours(1)
+        //    });
+        //    return Ok(new { token });
+        //}
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromForm] LoginModel loginModel)
         {
-            var hashedPassword=PasswordHasher.HashPassword(loginModel.Password);
+            var hashedPassword = PasswordHasher.HashPassword(loginModel.Password);
             var user = await _context.UsersMsg.FirstOrDefaultAsync(u => u.Username == loginModel.Username && u.PasswordHash == hashedPassword);
-            if(user==null)
+            if (user == null)
             {
                 ViewBag.ErrorMessage = "Invalid username or password";
                 return View();
             }
+
+            var userRoles = await _context.UserRoles.Where(ur => ur.UserId == user.id)
+                .Select(ur => ur.Role.RoleName).ToListAsync();
+
+            //Create claims
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name,user.Username),
+                new Claim("UserId",user.id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
+            };
+
+            foreach(var role in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var token = JwtTokenGenerator.GenerateToken(
-                user.Username,
+                claims,
                 _configuration["Jwt:Key"],
                  _configuration["Jwt:Issuer"],
                   _configuration["Jwt:Audience"]
