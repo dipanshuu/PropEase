@@ -7,6 +7,7 @@ namespace PropEase.Context
     public class AppDBContext:DbContext
     {
         public DbSet<ContactDetail> ContactsMsg { get; set; }
+        public DbSet<User> UsersMsg { get; set; }
         public AppDBContext(DbContextOptions<AppDBContext> options):base(options)
         {
 
